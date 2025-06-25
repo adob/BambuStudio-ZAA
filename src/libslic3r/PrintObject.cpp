@@ -7,6 +7,7 @@
 #include "I18N.hpp"
 #include "Layer.hpp"
 #include "MutablePolygon.hpp"
+#include "SLA/IndexedMesh.hpp"
 #include "Support/SupportMaterial.hpp"
 #include "Support/TreeSupport.hpp"
 #include "Surface.hpp"
@@ -21,6 +22,7 @@
 #include "AABBTreeLines.hpp"
 
 #include <float.h>
+#include <iterator>
 #include <string_view>
 #include <utility>
 
@@ -788,13 +790,64 @@ void PrintObject::ironing()
             [this](const tbb::blocked_range<size_t>& range) {
                 for (size_t layer_idx = range.begin(); layer_idx < range.end(); ++ layer_idx) {
                     m_print->throw_if_canceled();
-                    m_layers[layer_idx]->make_ironing();
+                    Layer *prev_layer = nullptr;
+                    if (layer_idx > 0) {
+                        prev_layer = m_layers[layer_idx-1];
+                    }
+                    m_layers[layer_idx]->make_ironing(prev_layer);
                 }
             }
         );
         m_print->throw_if_canceled();
         BOOST_LOG_TRIVIAL(debug) << "Ironing in parallel - end";
         this->set_done(posIroning);
+    }
+}
+
+void PrintObject::contour_z() 
+{
+    // TriangleMesh mesh = this->model_object()->mesh();
+    TriangleMesh mesh = this->m_model_object->raw_mesh();
+    //mesh.bounding_box();
+
+    std::cout << "ZAA bbox: max " << mesh.bounding_box().max << "; min " << mesh.bounding_box().min << std::endl;
+    std::cout << "ZAA center <" << mesh.center() << ">" << std::endl;
+    
+    sla::IndexedMesh imesh(mesh);
+
+    sla::IndexedMesh::hit_result hit_up = imesh.query_ray_hit({175.0, 160.0, 0.0}, {0.0, 0.0, 1.0});
+    std::cout << "HIT UP 175 160 " << hit_up.distance() << std::endl;
+
+    hit_up = imesh.query_ray_hit({0.0, 0.0, 0.0}, {0.0, 0.0, 1.0});
+    sla::IndexedMesh::hit_result hit_down = imesh.query_ray_hit({0.0, 0.0, 0.0}, {0.0, 0.0, -1.0});
+    std::cout << "HIT UP 0 0 " << hit_up.distance() << std::endl;
+    std::cout << "HIT DOWN 0 0 " << hit_down.distance() << std::endl;
+
+
+    std::cout << "GROUND LEVEL " << imesh.ground_level() << "; offset " << imesh.ground_level_offset() << std::endl;
+
+    // //if (this->set_started(posIroning)) {
+    //     BOOST_LOG_TRIVIAL(debug) << "ZAA in parallel - start";
+    //     tbb::parallel_for(
+    //         // Ironing starting with layer 0 to support ironing all surfaces.
+    //         tbb::blocked_range<size_t>(0, m_layers.size()),
+    //         [this, &imesh](const tbb::blocked_range<size_t>& range) {
+    //             for (size_t layer_idx = range.begin(); layer_idx < range.end(); ++ layer_idx) {
+    //                 m_print->throw_if_canceled();
+    //                 std::cout << "MAKE CONTOUR FOR LAYER " << layer_idx << std::endl;
+    //                 m_layers[layer_idx]->make_contour_z(imesh);
+    //             }
+    //         }
+    //     );
+    //     m_print->throw_if_canceled();
+    //     BOOST_LOG_TRIVIAL(debug) << "ZAA in parallel - end";
+    //     // this->set_done(posIroning);
+    // // }
+
+    int i = 1;
+    for (Layer *layer : m_layers) {
+        std::cout << "COUNTOURING LAYER " << i++ << "\n";
+        layer->make_contour_z(imesh);
     }
 }
 

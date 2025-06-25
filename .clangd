@@ -1,0 +1,6 @@
+CompileFlags:
+  Remove: [-fext-numeric-literals]
+  Add: [-Wno-enum-constexpr-conversion]
+
+  # look for compile_commands.json in the build/ directory
+  CompilationDatabase: build

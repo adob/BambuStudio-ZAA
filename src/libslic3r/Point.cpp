@@ -300,4 +300,15 @@ int cross(const Vec2crd &v1, const Vec2crd &v2)
 
 }
 
+Polyline to_polyline(const Points &points) { return Polyline(points); }
+Polyline3 to_polyline(const Points3 &points) { return Polyline3(points); }
+
+Points to_points(const Points3 &points3) {
+    Points points2;
+    points2.reserve(points2.size());
+    for (const Point3 &pt : points3) {
+        points2.push_back(pt.to_point());
+    }
+    return points2;
 }
+} // namespace Slic3r

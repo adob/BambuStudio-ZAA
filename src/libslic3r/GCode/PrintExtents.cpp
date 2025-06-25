@@ -14,12 +14,12 @@
 
 namespace Slic3r {
 
-static inline BoundingBox extrusion_polyline_extents(const Polyline &polyline, const coord_t radius)
+static inline BoundingBox extrusion_polyline_extents(const Polyline3 &polyline, const coord_t radius)
 {
     BoundingBox bbox;
     if (! polyline.points.empty())
-        bbox.merge(polyline.points.front());
-    for (const Point &pt : polyline.points) {
+        bbox.merge(polyline.points.front().to_point());
+    for (const Point3 &pt : polyline.points) {
         bbox.min(0) = std::min(bbox.min(0), pt(0) - radius);
         bbox.min(1) = std::min(bbox.min(1), pt(1) - radius);
         bbox.max(0) = std::max(bbox.max(0), pt(0) + radius);

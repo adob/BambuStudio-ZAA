@@ -431,11 +431,12 @@ static ExtrusionEntityCollection traverse_loops(const PerimeterGenerator &perime
 
             // Reapply the nearest point search for starting point.
             // We allow polyline reversal because Clipper may have randomly reversed polylines during clipping.
-            chain_and_reorder_extrusion_paths(paths, &paths.front().first_point());
+            Point first_point = paths.front().first_point();
+            chain_and_reorder_extrusion_paths(paths, &first_point);
         } else {
             ExtrusionPath path(role);
             //BBS.
-            path.polyline = polygon.split_at_first_point();
+            path.polyline = Polyline3(polygon.split_at_first_point());
             path.overhang_degree = 0;
             path.curve_degree = 0;
             path.mm3_per_mm = extrusion_mm3_per_mm;
@@ -736,11 +737,11 @@ static ExtrusionEntityCollection traverse_extrusions(const PerimeterGenerator& p
                     };
                     std::unordered_map<Point, PointInfo, PointHash> point_occurrence;
                     for (const ExtrusionPath& path : paths) {
-                        ++point_occurrence[path.polyline.first_point()].occurrence;
-                        ++point_occurrence[path.polyline.last_point()].occurrence;
+                        ++point_occurrence[path.polyline.first_point().to_point()].occurrence;
+                        ++point_occurrence[path.polyline.last_point().to_point()].occurrence;
                         if (path.role() == erOverhangPerimeter) {
-                            point_occurrence[path.polyline.first_point()].is_overhang = true;
-                            point_occurrence[path.polyline.last_point()].is_overhang = true;
+                            point_occurrence[path.polyline.first_point().to_point()].is_overhang = true;
+                            point_occurrence[path.polyline.last_point().to_point()].is_overhang = true;
                         }
                     }
 

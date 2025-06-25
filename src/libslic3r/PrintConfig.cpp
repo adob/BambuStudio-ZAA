@@ -3432,14 +3432,37 @@ void PrintConfigDef::init_fff_params()
     def->mode = comAdvanced;
     def->set_default_value(new ConfigOptionEnum<IroningType>(IroningType::NoIroning));
 
+    def = this->add("zaa_enabled", coBool);
+    def->label    = "ZAA Enabled";
+    def->category = L("Quality");
+    def->tooltip  = "Enable Z contouring (anti-aliasing)";
+    def->mode     = comAdvanced;
+    def->set_default_value(new ConfigOptionBool(false));
+
     def                = this->add("ironing_pattern", coEnum);
     def->label         = L("Ironing Pattern");
     def->category      = L("Quality");
     def->enum_keys_map = &ConfigOptionEnum<InfillPattern>::get_enum_values();
+    // def->enum_values.push_back("concentric");
+    // def->enum_values.push_back("zig-zag");
+    // def->enum_labels.push_back(L("Concentric"));
+    // def->enum_labels.push_back(L("Rectilinear"));
     def->enum_values.push_back("concentric");
     def->enum_values.push_back("zig-zag");
+    def->enum_values.push_back("monotonic");
+    def->enum_values.push_back("monotonicline");
+    def->enum_values.push_back("alignedrectilinear");
+    def->enum_values.push_back("hilbertcurve");
+    def->enum_values.push_back("archimedeanchords");
+    def->enum_values.push_back("octagramspiral");
     def->enum_labels.push_back(L("Concentric"));
     def->enum_labels.push_back(L("Rectilinear"));
+    def->enum_labels.push_back(L("Monotonic"));
+    def->enum_labels.push_back(L("Monotonic line"));
+    def->enum_labels.push_back(L("Aligned Rectilinear"));
+    def->enum_labels.push_back(L("Hilbert Curve"));
+    def->enum_labels.push_back(L("Archimedean Chords"));
+    def->enum_labels.push_back(L("Octagram Spiral"));
     def->mode = comAdvanced;
     def->set_default_value(new ConfigOptionEnum<InfillPattern>(ipRectilinear));
 
@@ -3470,7 +3493,17 @@ void PrintConfigDef::init_fff_params()
     def->category = L("Quality");
     def->tooltip  = L("The distance to keep the from the edges of ironing line. 0 means not apply.");
     def->sidetext = L("mm");
-    def->min      = 0;
+    def->min      = -100;
+    def->max      = 100;
+    def->mode     = comAdvanced;
+    def->set_default_value(new ConfigOptionFloat(0));
+
+    def           = this->add("ironing_expansion", coFloat);
+    def->label    = L("Ironing expansion");
+    def->category = L("Quality");
+    def->tooltip  = L("");
+    def->sidetext = L("mm");
+    def->min      = -100;
     def->max      = 100;
     def->mode     = comAdvanced;
     def->set_default_value(new ConfigOptionFloat(0));

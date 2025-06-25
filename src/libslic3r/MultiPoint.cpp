@@ -176,14 +176,15 @@ bool MultiPoint::intersections(const Line &line, Points *intersections) const
     return intersections->size() > intersections_size;
 }
 
-std::vector<Point> MultiPoint::_douglas_peucker(const std::vector<Point>& pts, const double tolerance)
+template <typename POINT>
+std::vector<POINT> douglas_peucker_tmpl(const std::vector<POINT> &pts, double tolerance) 
 {
-    std::vector<Point> result_pts;
+    std::vector<POINT> result_pts;
 	double tolerance_sq = tolerance * tolerance;
     if (! pts.empty()) {
-        const Point  *anchor      = &pts.front();
+        const POINT  *anchor      = &pts.front();
         size_t        anchor_idx  = 0;
-        const Point  *floater     = &pts.back();
+        const POINT  *floater     = &pts.back();
         size_t        floater_idx = pts.size() - 1;
         result_pts.reserve(pts.size());
         result_pts.emplace_back(*anchor);
@@ -242,6 +243,11 @@ std::vector<Point> MultiPoint::_douglas_peucker(const std::vector<Point>& pts, c
 #endif
     }
     return result_pts;
+}
+
+std::vector<Point> MultiPoint::_douglas_peucker(const std::vector<Point>& pts, const double tolerance)
+{
+    return douglas_peucker_tmpl(pts, tolerance);
 }
 
 // Visivalingam simplification algorithm https://github.com/slic3r/Slic3r/pull/3825
@@ -384,15 +390,6 @@ Points MultiPoint::concave_hull_2d(const Points& pts, const double tolerence)
     return hull;
 }
 
-
-void MultiPoint3::translate(double x, double y)
-{
-    for (Vec3crd &p : points) {
-        p(0) += coord_t(x);
-        p(1) += coord_t(y);
-    }
-}
-
 void MultiPoint3::translate(const Point& vector)
 {
     this->translate(vector(0), vector(1));
@@ -476,4 +473,44 @@ void MultiPoint::symmetric_y(const coord_t &x_axis)
     }
 }
 
+Points3 MultiPoint3::_douglas_peucker(const Points3 &pts, const double tolerance) 
+{
+    return douglas_peucker_tmpl(pts, tolerance);
 }
+
+void MultiPoint3::append(const Points &points) {
+    this->points.reserve(this->points.size() + points.size());
+    for (const Point &point : points) {
+        this->points.emplace_back(point.x(), point.y(), 0);
+    }
+}
+
+int MultiPoint3::find_point(const Point &point) const 
+{
+      for (const Point3 &pt : this->points)
+        if (pt.to_point() == point)
+            return int(&pt - &this->points.front());
+    return -1;  // not found
+}
+
+int MultiPoint3::find_point(const Point &point,
+                            const double scaled_epsilon) const 
+{
+    if (scaled_epsilon == 0) return this->find_point(point);
+
+    auto dist2_min = std::numeric_limits<double>::max();
+    auto eps2      = scaled_epsilon * scaled_epsilon;
+    int  idx_min   = -1;
+    for (const Point3 &pt : this->points) {
+        double d2 = (pt.to_point() - point).cast<double>().squaredNorm();
+        if (d2 < dist2_min) {
+            idx_min   = int(&pt - &this->points.front());
+            dist2_min = d2;
+        }
+    }
+    return dist2_min < eps2 ? idx_min : -1;
+}
+Points3 MultiPoint::_douglas_peucker(const Points3 &points, const double tolerance) {
+  return MultiPoint3::_douglas_peucker(points, tolerance);
+}
+} // namespace Slic3r

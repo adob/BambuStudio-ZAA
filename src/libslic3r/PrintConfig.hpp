@@ -932,6 +932,8 @@ PRINT_CONFIG_CLASS_DEFINE(
     ((ConfigOptionInt,  interlocking_boundary_avoidance))
     ((ConfigOptionInt,  scarf_angle_threshold))
 
+    // Z Anti-Aliasing
+    ((ConfigOptionBool, zaa_enabled))
 )
 
 // This object is mapped to Perl as Slic3r::Config::PrintRegion.
@@ -989,6 +991,7 @@ PRINT_CONFIG_CLASS_DEFINE(
     ((ConfigOptionFloat, ironing_inset))
     ((ConfigOptionFloat, ironing_direction))
     ((ConfigOptionFloat, ironing_speed))
+    ((ConfigOptionFloat, ironing_expansion))
     // Detect bridging perimeters
     ((ConfigOptionBool, detect_overhang_wall))
     ((ConfigOptionBool, smooth_speed_discontinuity_area))

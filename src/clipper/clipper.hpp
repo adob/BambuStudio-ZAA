@@ -111,6 +111,7 @@ using DoublePoint = Eigen::Matrix<double, 2, 1, Eigen::DontAlign>;
 //------------------------------------------------------------------------------
 
 typedef std::vector<IntPoint> Path;
+typedef std::vector<Eigen::Matrix<cInt,3, 1, Eigen::DontAlign>> Path3;
 typedef std::vector<Path> Paths;
 
 inline Path& operator <<(Path& poly, const IntPoint& p) {poly.push_back(p); return poly;}
@@ -300,6 +301,10 @@ public:
   ~ClipperBase() { Clear(); }
   bool AddPath(const Path &pg, PolyType PolyTyp, bool Closed);
 
+  // #ifndef CLIPPERLIB_USE_XYZ
+  // bool AddPath(const Path3 &pg, PolyType PolyTyp, bool Closed);
+  // #endif
+
   template<typename PathsProvider>
   bool AddPaths(PathsProvider &&paths_provider, PolyType PolyTyp, bool Closed)
   {
@@ -312,7 +317,7 @@ public:
     std::vector<int> num_edges(num_paths, 0);
     int num_edges_total = 0;
     size_t i = 0;
-    for (const Path &pg : paths_provider) {
+    for (const auto &pg : paths_provider) {
       // Remove duplicate end point from a closed input path.
       // Remove duplicate points from the end of the input path.
       int highI = (int)pg.size() -1;

@@ -762,7 +762,8 @@ std::vector<coordf_t> generate_object_layers(
                 assert(height >= slicing_params.min_layer_height - EPSILON && height <= slicing_params.max_layer_height + EPSILON);
             }
         }
-        slice_z = print_z + 0.5 * height;
+        //slice_z = print_z + 0.5 * height;
+        slice_z = print_z + 0.05; // ALEX
         if (slice_z >= slicing_params.object_print_z_height())
             break;
         assert(height > slicing_params.min_layer_height - EPSILON);

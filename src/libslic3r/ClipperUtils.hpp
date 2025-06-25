@@ -3,10 +3,12 @@
 
 //#define SLIC3R_USE_CLIPPER2
 
+#include "Polyline.hpp"
 #include "libslic3r.h"
 #include "ExPolygon.hpp"
 #include "Polygon.hpp"
 #include "Surface.hpp"
+#include <boost/iterator/transform_iterator.hpp>
 
 #ifdef SLIC3R_USE_CLIPPER2
 
@@ -161,8 +163,65 @@ namespace ClipperUtils {
         const std::vector<MultiPointType> &m_multipoints;
     };
 
+    // // template<typename MultiPointType>
+    // class MultiPoints3Provider {
+    // public:
+    //     MultiPoints3Provider(const std::vector<Polyline3> &multipoints) : m_multipoints(multipoints) {}
+
+    //     struct PointsIter {
+    //         Points3::const_iterator m_it;
+    //         explicit PointsIter(const Points3 &points) : m_it(points.cbegin()) {}
+
+    //         using value_type        = Point;
+    //         using difference_type   = std::ptrdiff_t;
+    //         using pointer           = const Point*;
+    //         using reference         = const Point&;
+    //         using iterator_category = std::input_iterator_tag;
+
+    //         Point operator*() const { 
+    //             const Point3 &pt = *m_it;
+    //             return Point(pt.x(), pt.y());
+    //         }
+    //         bool operator==(const PointsIter &rhs) const { return m_it == rhs.m_it; }
+    //         bool operator!=(const PointsIter &rhs) const { return !(*this == rhs); }
+    //         PointsIter& operator++() { ++m_it; return *this; }
+    //         ///PointsIter operator++(int) { return m_it++ }
+    //     } ;
+
+    //     struct iterator {
+    //     public:
+    //         using value_type        = PointsIter;
+    //         using difference_type   = std::ptrdiff_t;
+    //         using pointer           = const PointsIter*;
+    //         using reference         = const PointsIter&;
+    //         using iterator_category = std::input_iterator_tag;
+
+    //         explicit iterator(typename std::vector<Polyline3>::const_iterator it) : m_it(it) {}
+    //         auto operator*() const { 
+    //             return boost::make_transform_iterator(m_it->points.begin(), [](const Point3& pt) -> Point {
+    //                 return Point(pt.x(), pt.y());
+    //             });
+    //         }
+    //         bool operator==(const iterator &rhs) const { return m_it == rhs.m_it; }
+    //         bool operator!=(const iterator &rhs) const { return !(*this == rhs); }
+    //         iterator& operator++() { ++ m_it; return *this; }
+    //     private:
+    //         typename std::vector<Polyline3>::const_iterator m_it;
+    //     };
+
+    //     iterator cbegin() const { return iterator(m_multipoints.begin()); }
+    //     iterator begin()  const { return this->cbegin(); }
+    //     iterator cend()   const { return iterator(m_multipoints.end()); }
+    //     iterator end()    const { return this->cend(); }
+    //     size_t   size()   const { return m_multipoints.size(); }
+
+    // private:
+    //     const std::vector<Polyline3> &m_multipoints;
+    // };
+
     using PolygonsProvider  = MultiPointsProvider<Polygon>;
     using PolylinesProvider = MultiPointsProvider<Polyline>;
+    // using Polylines3Provider = MultiPoints3Provider;
 
     struct ExPolygonProvider {
         ExPolygonProvider(const ExPolygon &expoly) : m_expoly(expoly) {}
@@ -344,6 +403,7 @@ Slic3r::Polygons offset(const Slic3r::Polygon &polygon, const float delta, Clipp
 // Wherever applicable, please use the expand() / shrink() variants instead, they convey their purpose better.
 // Input polygons for negative offset shall be "normalized": There must be no overlap / intersections between the input polygons.
 Slic3r::Polygons   offset(const Slic3r::Polyline &polyline, const float delta, ClipperLib::JoinType joinType = DefaultLineJoinType, double miterLimit = DefaultLineMiterLimit, ClipperLib::EndType end_type = DefaultEndType);
+// Slic3r::Polygons   offset(const Slic3r::Polyline3 &polyline, const float delta, ClipperLib::JoinType joinType = DefaultLineJoinType, double miterLimit = DefaultLineMiterLimit, ClipperLib::EndType end_type = DefaultEndType);
 Slic3r::Polygons   offset(const Slic3r::Polylines &polylines, const float delta, ClipperLib::JoinType joinType = DefaultLineJoinType, double miterLimit = DefaultLineMiterLimit, ClipperLib::EndType end_type = DefaultEndType);
 Slic3r::Polygons   offset(const Slic3r::Polygons &polygons, const float delta, ClipperLib::JoinType joinType = DefaultJoinType, double miterLimit = DefaultMiterLimit);
 Slic3r::Polygons   offset(const Slic3r::ExPolygon &expolygon, const float delta, ClipperLib::JoinType joinType = DefaultJoinType, double miterLimit = DefaultMiterLimit);
@@ -532,6 +592,8 @@ Slic3r::Polylines  intersection_pl(const Slic3r::Polyline &subject, const Slic3r
 Slic3r::Polylines  intersection_pl(const Slic3r::Polylines &subject, const Slic3r::Polygons &clip);
 Slic3r::Polylines  intersection_pl(const Slic3r::Polylines &subject, const Slic3r::ExPolygons &clip);
 Slic3r::Polylines  intersection_pl(const Slic3r::Polygons &subject, const Slic3r::Polygons &clip);
+Slic3r::Polylines3 intersection_pl(const Slic3r::Polylines3 &subject, const Slic3r::Polygon &clip);
+Slic3r::Polylines3 intersection_pl(const Slic3r::Polylines3 &subject, const Slic3r::ExPolygon &clip);
 
 inline Slic3r::Lines intersection_ln(const Slic3r::Lines &subject, const Slic3r::Polygons &clip)
 {

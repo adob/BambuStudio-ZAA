@@ -25,6 +25,7 @@ LayerPtrs new_layers(
     // Object layers (pairs of bottom/top Z coordinate), without the raft.
     const std::vector<coordf_t> &object_layers)
 {
+    printf("NEW LAYERS called %lu\n", object_layers.size());
     LayerPtrs out;
     out.reserve(object_layers.size());
     auto     id   = int(print_object->slicing_parameters().raft_layers());
@@ -33,7 +34,9 @@ LayerPtrs new_layers(
     for (size_t i_layer = 0; i_layer < object_layers.size(); i_layer += 2) {
         coordf_t lo = object_layers[i_layer];
         coordf_t hi = object_layers[i_layer + 1];
-        coordf_t slice_z = 0.5 * (lo + hi);
+        //coordf_t slice_z = 0.5 * (lo + hi);
+        coordf_t slice_z = lo + 0.05;  // ALEX
+        printf("z %f; lo %f; hi %f\n", slice_z, lo, hi);
         Layer *layer = new Layer(id ++, print_object, hi - lo, hi + zmin, slice_z);
         out.emplace_back(layer);
         if (prev != nullptr) {
