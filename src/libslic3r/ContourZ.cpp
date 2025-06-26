@@ -84,11 +84,18 @@ static bool contour_extrusion_path(LayerRegion *region, const sla::IndexedMesh &
 					down += adjustment;
 				}
 			}
+
+			double max_up = min_z;
+			double max_down = height - min_z;
+			if (path.role() == erIroning) {
+				max_up = height;
+				max_down = height + 0.1;
+			}
 			
-			if (up < down && up <= min_z) {
-				d = std::min(min_z, up);
-			} else if (down <= up && down <= height - min_z) {
-				d = -std::min(height - min_z, down);
+			if (up < down && up <= max_up) {
+				d = std::min(max_up, up);
+			} else if (down <= up && down <= max_down) {
+				d = -std::min(max_down, down);
 			}
 
 			if (std::abs(d) > EPSILON) {
@@ -188,7 +195,7 @@ void Layer::make_contour_z(const sla::IndexedMesh &mesh)
 {
 	for (LayerRegion *region : this->regions()) {
 		for (size_t i = 0; i < region->fills.entities.size(); i++) {
-			handle_extrusion_collection(region, mesh, region->fills, {erTopSolidInfill});
+			handle_extrusion_collection(region, mesh, region->fills, {erTopSolidInfill, erIroning});
 			handle_extrusion_collection(region, mesh, region->perimeters, {erExternalPerimeter, erPerimeter, erOverhangPerimeter});
 		}
 	}

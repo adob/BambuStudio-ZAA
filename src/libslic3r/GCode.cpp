@@ -6008,6 +6008,9 @@ std::string GCode::_extrude(const ExtrusionPath &path, std::string description, 
             z = get_sloped_z(sloped->slope_begin.z_ratio);
         } else if ((!m_last_pos_defined && first_point.z() != 0) || m_last_pos.z() != first_point.z()) {
             z = m_nominal_z + unscale_(first_point.z());
+            if (z < 0.2) {
+                z = 0.2;
+            }
         }
         gcode += this->travel_to(
             path.first_point(),
@@ -6311,14 +6314,21 @@ std::string GCode::_extrude(const ExtrusionPath &path, std::string description, 
                     Vec2d dest2d = this->point_to_gcode(line.b.to_point());
                     coordf_t z_diff = unscale_(line.b.z());
 
-                    double extrusion_ratio = (path.height + z_diff) / path.height;
+                    double extrusion_ratio = 1;
+                    if (path.role() != erIroning) {
+                        extrusion_ratio = (path.height + z_diff) / path.height;
+                    }
+                    
                     double e = e_per_mm * line_length * extrusion_ratio;
 
                     double z = m_nominal_z + z_diff;
+                    if (z < 0.2) {
+                        z = 0.2;
+                    }
                     gcode += m_writer.extrude_to_xyz(
                         Vec3d(dest2d.x(), dest2d.y(), z),
                         e,
-                        comment + "; z_diff " + std::to_string(z_diff) + " " + ExtrusionEntity::role_to_string(path.role()));
+                        comment + "; z_diff " + std::to_string(z_diff) + " " + ExtrusionEntity::role_to_string(path.role()) + "; eratio " + std::to_string(extrusion_ratio));
                     
                 } else if (sloped == nullptr) {
                     gcode += m_writer.extrude_to_xy(
@@ -6446,18 +6456,6 @@ std::string GCode::travel_to(const Point &point, ExtrusionRole role, std::string
         This is expressed in print coordinates, so it will need to be translated by
         this->origin in order to get G-code coordinates.  */
     Polyline travel { this->last_pos(), point };
-
-    // {
-    //     double expect_z = m_nominal_z + unscale_(point.z());
-    //     double actual_z = z;
-    //     if (actual_z == DBL_MAX) {
-    //         actual_z = m_nominal_z;
-    //     }
-    //     if (expect_z != actual_z) {
-    //         printf("MISMATCH: point.z %f; z %f; nominal_z %f; expect %f; actual %f\n", unscale_(point.z()), z, m_nominal_z, expect_z, actual_z);
-    //         throw RuntimeError("GCode::travel_to: Z mismatch");
-    //     }
-    // }
 
     // check whether a straight travel move would need retraction
     LiftType lift_type = LiftType::SpiralLift;
