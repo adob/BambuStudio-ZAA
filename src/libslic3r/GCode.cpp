@@ -6006,10 +6006,8 @@ std::string GCode::_extrude(const ExtrusionPath &path, std::string description, 
         double z = DBL_MAX;
         if (sloped != nullptr) {
             z = get_sloped_z(sloped->slope_begin.z_ratio);
-            printf("SET Z FROM SLOPED %f\n", z);
         } else if ((!m_last_pos_defined && first_point.z() != 0) || m_last_pos.z() != first_point.z()) {
             z = m_nominal_z + unscale_(first_point.z());
-            printf("SET Z L5443\n");
         }
         gcode += this->travel_to(
             path.first_point(),
@@ -6320,7 +6318,7 @@ std::string GCode::_extrude(const ExtrusionPath &path, std::string description, 
                     gcode += m_writer.extrude_to_xyz(
                         Vec3d(dest2d.x(), dest2d.y(), z),
                         e,
-                        comment + "; z_diff " + std::to_string(z_diff));
+                        comment + "; z_diff " + std::to_string(z_diff) + " " + ExtrusionEntity::role_to_string(path.role()));
                     
                 } else if (sloped == nullptr) {
                     gcode += m_writer.extrude_to_xy(

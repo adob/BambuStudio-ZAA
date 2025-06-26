@@ -932,8 +932,11 @@ PRINT_CONFIG_CLASS_DEFINE(
     ((ConfigOptionInt,  interlocking_boundary_avoidance))
     ((ConfigOptionInt,  scarf_angle_threshold))
 
-    // Z Anti-Aliasing
+    // Z Anti-Aliasing (aka Z Contouring)
     ((ConfigOptionBool, zaa_enabled))
+    ((ConfigOptionBool, zaa_minimize_perimeter_height))
+    ((ConfigOptionBool, zaa_dont_alternate_fill_direction))
+    ((ConfigOptionFloat, zaa_min_z))
 )
 
 // This object is mapped to Perl as Slic3r::Config::PrintRegion.

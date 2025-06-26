@@ -207,7 +207,7 @@ public:
         FillAdaptive::Octree *support_fill_octree,
         FillLightning::Generator* lightning_generator) const;
 
-    void 					make_ironing(Layer *prev_layer);
+    void 					make_ironing();
     void                    make_contour_z(const sla::IndexedMesh &mesh);
 
     void                    export_region_slices_to_svg(const char *path) const;

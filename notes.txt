@@ -1,3 +1,20 @@
-cmake .. -DSLIC3R_STATIC=ON -DSLIC3R_GTK=3 -DBBL_RELEASE_TO_PUBLIC=1 -DCMAKE_PREFIX_PATH="/home/alex/proj/BambuStudio_dep/usr/local" -DCMAKE_INSTALL_PREFIX="../install_dir" -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+# Make build configuration in release mode (no debug info)
+    cmake .. -DSLIC3R_STATIC=ON -DSLIC3R_GTK=3 -DBBL_RELEASE_TO_PUBLIC=1 -DCMAKE_PREFIX_PATH="$PWD/../../BambuStudio_dep/usr/local" -DCMAKE_INSTALL_PREFIX="../install_dir" -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 
- cmake --build . --target install --config Release -j32
+# Make build configuration in release mode with debug info
+    cmake .. -DSLIC3R_STATIC=ON -DSLIC3R_GTK=3 -DBBL_RELEASE_TO_PUBLIC=1 -DCMAKE_PREFIX_PATH="$PWD/../../BambuStudio_dep/usr/local" -DCMAKE_INSTALL_PREFIX="../install_dir" -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+
+# Compile (32 parallel tasks)
+    cmake --build . --target install --config Release -j32
+
+# Add configuration option
+    Add to `s_Preset_print_options` in src/libslic3r/Preset.cpp
+    Update src/libslic3r/PrintConfig.hpp
+    Update src/libslic3r/PrintConfig.cpp
+    Update src/slic3r/GUI/GUI_Factories.cpp
+    Update src/slic3r/GUI/Tab.cpp
+
+zaa_enabled
+zaa_minimize_perimeter_height
+zaa_dont_alternate_fill_direction
+zaa_min_z

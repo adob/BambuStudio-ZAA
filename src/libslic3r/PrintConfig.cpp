@@ -3432,13 +3432,6 @@ void PrintConfigDef::init_fff_params()
     def->mode = comAdvanced;
     def->set_default_value(new ConfigOptionEnum<IroningType>(IroningType::NoIroning));
 
-    def = this->add("zaa_enabled", coBool);
-    def->label    = "ZAA Enabled";
-    def->category = L("Quality");
-    def->tooltip  = "Enable Z contouring (anti-aliasing)";
-    def->mode     = comAdvanced;
-    def->set_default_value(new ConfigOptionBool(false));
-
     def                = this->add("ironing_pattern", coEnum);
     def->label         = L("Ironing Pattern");
     def->category      = L("Quality");
@@ -3498,16 +3491,6 @@ void PrintConfigDef::init_fff_params()
     def->mode     = comAdvanced;
     def->set_default_value(new ConfigOptionFloat(0));
 
-    def           = this->add("ironing_expansion", coFloat);
-    def->label    = L("Ironing expansion");
-    def->category = L("Quality");
-    def->tooltip  = L("");
-    def->sidetext = L("mm");
-    def->min      = -100;
-    def->max      = 100;
-    def->mode     = comAdvanced;
-    def->set_default_value(new ConfigOptionFloat(0));
-
     def = this->add("ironing_speed", coFloat);
     def->label = L("Ironing speed");
     def->category = L("Quality");
@@ -3526,6 +3509,44 @@ void PrintConfigDef::init_fff_params()
     def->max      = 360;
     def->mode     = comDevelop;
     def->set_default_value(new ConfigOptionFloat(45));
+
+    def = this->add("zaa_enabled", coBool);
+    def->label    = "Z contouring enabled";
+    def->category = L("Quality");
+    def->tooltip  = "Enable Z-layer contouring (aka Z-layer anti-aliasing)";
+    def->mode     = comAdvanced;
+    def->set_default_value(new ConfigOptionBool(false));
+
+    def = this->add("zaa_minimize_perimeter_height", coBool);
+    def->label    = "Minimize wall height";
+    def->category = L("Quality");
+    def->tooltip  = "Reduce top surface perimeter heights to match height of edge";
+    def->mode     = comAdvanced;
+    def->set_default_value(new ConfigOptionBool(false));
+
+    def = this->add("zaa_dont_alternate_fill_direction", coBool);
+    def->label    = "Don't alternate fill direction";
+    def->category = L("Quality");
+    // def->tooltip  = "";
+    def->mode     = comAdvanced;
+    def->set_default_value(new ConfigOptionBool(false));
+
+    def = this->add("zaa_min_z", coFloat);
+    def->label    = "Minimum z height (mm)";
+    def->category = L("Quality");
+    def->tooltip  = "Minimum z layer height. Also controls slicing plane";
+    def->mode     = comAdvanced;
+    def->set_default_value(new ConfigOptionFloat(0.05));
+
+    def           = this->add("ironing_expansion", coFloat);
+    def->label    = L("Ironing expansion");
+    def->category = L("Quality");
+    def->tooltip  = L("");
+    def->sidetext = L("mm");
+    def->min      = -100;
+    def->max      = 100;
+    def->mode     = comAdvanced;
+    def->set_default_value(new ConfigOptionFloat(0));
 
     def = this->add("layer_change_gcode", coString);
     def->label = L("Layer change G-code");

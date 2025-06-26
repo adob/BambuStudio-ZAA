@@ -1964,18 +1964,17 @@ void Print::process(std::unordered_map<std::string, long long>* slice_time, bool
             }
         }
 
-        // ZAA GOES HERE
+        // Z-Contouring
         for (PrintObject *obj : m_objects) {
-            if (need_slicing_objects.count(obj) == 0) {
-                continue;
-            }
-
-            if (obj->config().zaa_enabled) {
-                std::cout << "ZAA ENABLED v2" << std::endl;
+            bool need_contouring = need_slicing_objects.count(obj) != 0 && obj->config().zaa_enabled;
+            // need_contouring = false;
+            if (need_contouring) {
                 obj->contour_z();
             } else {
-                std::cout << "ZAA DISABLED" << std::endl;
+                if (obj->set_started(posContouring))
+                    obj->set_done(posContouring);
             }
+
         }
 
 
@@ -2026,6 +2025,8 @@ void Print::process(std::unordered_map<std::string, long long>* slice_time, bool
                     obj->set_done(posInfill);
                 if (obj->set_started(posIroning))
                     obj->set_done(posIroning);
+                if (obj->set_started(posContouring))
+                    obj->set_done(posContouring);
                 if (obj->set_started(posSupportMaterial))
                     obj->set_done(posSupportMaterial);
                 if (obj->set_started(posDetectOverhangsForLift))
@@ -2255,6 +2256,17 @@ void Print::process(std::unordered_map<std::string, long long>* slice_time, bool
                 obj->set_done(posSimplifySupportPath);
         }
     }
+
+    // // Z-Contouring
+    // for (PrintObject *obj : m_objects) {
+    //     bool need_contouring = need_slicing_objects.count(obj) != 0 && obj->config().zaa_enabled;
+    //     if (need_contouring) {
+    //         // if (obj->set_started(posContouring))
+    //         //     obj->set_done(posContouring);
+    //         // return;
+    //         obj->contour_z();
+    //     }
+    // }
 
     // BBS
     bool has_adaptive_layer_height = false;

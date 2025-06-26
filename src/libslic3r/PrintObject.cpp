@@ -23,6 +23,9 @@
 
 #include <float.h>
 #include <iterator>
+#include <mutex>
+#include <ostream>
+#include <string>
 #include <string_view>
 #include <utility>
 
@@ -790,11 +793,7 @@ void PrintObject::ironing()
             [this](const tbb::blocked_range<size_t>& range) {
                 for (size_t layer_idx = range.begin(); layer_idx < range.end(); ++ layer_idx) {
                     m_print->throw_if_canceled();
-                    Layer *prev_layer = nullptr;
-                    if (layer_idx > 0) {
-                        prev_layer = m_layers[layer_idx-1];
-                    }
-                    m_layers[layer_idx]->make_ironing(prev_layer);
+                    m_layers[layer_idx]->make_ironing();
                 }
             }
         );
@@ -806,49 +805,49 @@ void PrintObject::ironing()
 
 void PrintObject::contour_z() 
 {
-    // TriangleMesh mesh = this->model_object()->mesh();
-    TriangleMesh mesh = this->m_model_object->raw_mesh();
-    //mesh.bounding_box();
+    if (!this->set_started(posContouring)) {
+        return;
+    }
 
-    std::cout << "ZAA bbox: max " << mesh.bounding_box().max << "; min " << mesh.bounding_box().min << std::endl;
-    std::cout << "ZAA center <" << mesh.center() << ">" << std::endl;
-    
+    m_print->set_status(40, L("Z contouring"));
+    BOOST_LOG_TRIVIAL(debug) << "Contouring in parallel - start";
+
+    TriangleMesh mesh = this->m_model_object->raw_mesh();    
     sla::IndexedMesh imesh(mesh);
 
-    sla::IndexedMesh::hit_result hit_up = imesh.query_ray_hit({175.0, 160.0, 0.0}, {0.0, 0.0, 1.0});
-    std::cout << "HIT UP 175 160 " << hit_up.distance() << std::endl;
+    // int layer_idx = 0;
+    // for (Layer *layer : m_layers) {
+    //     std::cout << "ABOUT TO CONTOUR LAYER " << (layer_idx+1) << std::endl;
+    //     layer->make_contour_z(imesh);
 
-    hit_up = imesh.query_ray_hit({0.0, 0.0, 0.0}, {0.0, 0.0, 1.0});
-    sla::IndexedMesh::hit_result hit_down = imesh.query_ray_hit({0.0, 0.0, 0.0}, {0.0, 0.0, -1.0});
-    std::cout << "HIT UP 0 0 " << hit_up.distance() << std::endl;
-    std::cout << "HIT DOWN 0 0 " << hit_down.distance() << std::endl;
+    //     // std::string msg = "Z contouring layer " + std::to_string(layer_idx+1) + "/" + std::to_string(m_layers.size());
+    //     std::string msg = (boost::format("Z contoured layer %d/%d (%d%%)") % (layer_idx+1) % m_layers.size() % int(double(layer_idx+1) / m_layers.size() * 100)).str();
+    //     m_print->set_status(40, msg);
 
+    //     layer_idx++;
+    // }
 
-    std::cout << "GROUND LEVEL " << imesh.ground_level() << "; offset " << imesh.ground_level_offset() << std::endl;
+    std::mutex mtx;
+    size_t completed = 0;
+    tbb::parallel_for(
+        // Contouring starting with layer second layer to avoid build plate collision
+        tbb::blocked_range<size_t>(1, m_layers.size()),
+        [&, this](const tbb::blocked_range<size_t>& range) {
+            for (size_t layer_idx = range.begin(); layer_idx < range.end(); layer_idx++) {
+                m_print->throw_if_canceled();
+                m_layers[layer_idx]->make_contour_z(imesh);
 
-    // //if (this->set_started(posIroning)) {
-    //     BOOST_LOG_TRIVIAL(debug) << "ZAA in parallel - start";
-    //     tbb::parallel_for(
-    //         // Ironing starting with layer 0 to support ironing all surfaces.
-    //         tbb::blocked_range<size_t>(0, m_layers.size()),
-    //         [this, &imesh](const tbb::blocked_range<size_t>& range) {
-    //             for (size_t layer_idx = range.begin(); layer_idx < range.end(); ++ layer_idx) {
-    //                 m_print->throw_if_canceled();
-    //                 std::cout << "MAKE CONTOUR FOR LAYER " << layer_idx << std::endl;
-    //                 m_layers[layer_idx]->make_contour_z(imesh);
-    //             }
-    //         }
-    //     );
-    //     m_print->throw_if_canceled();
-    //     BOOST_LOG_TRIVIAL(debug) << "ZAA in parallel - end";
-    //     // this->set_done(posIroning);
-    // // }
-
-    int i = 1;
-    for (Layer *layer : m_layers) {
-        std::cout << "COUNTOURING LAYER " << i++ << "\n";
-        layer->make_contour_z(imesh);
-    }
+                std::scoped_lock lock(mtx);
+                completed++;
+                std::string msg = (boost::format("Z contoured layer %d/%d (%d%%)") % (completed) % m_layers.size() % int(double(completed) / m_layers.size() * 100)).str();
+                m_print->set_status(40, msg);
+            }
+        }
+    );
+    m_print->throw_if_canceled();
+    BOOST_LOG_TRIVIAL(debug) << "Contouring in parallel - end";
+    this->set_done(posContouring);
+    
 }
 
 // BBS
@@ -1436,15 +1435,15 @@ bool PrintObject::invalidate_step(PrintObjectStep step)
 
     // propagate to dependent steps
     if (step == posPerimeters) {
-		invalidated |= this->invalidate_steps({ posPrepareInfill, posInfill, posIroning, posSimplifyWall, posSimplifyInfill });
+		invalidated |= this->invalidate_steps({ posPrepareInfill, posInfill, posIroning, posContouring, posSimplifyWall, posSimplifyInfill });
         invalidated |= m_print->invalidate_steps({ psSkirtBrim });
     } else if (step == posPrepareInfill) {
-        invalidated |= this->invalidate_steps({ posInfill, posIroning, posSimplifyWall, posSimplifyInfill });
+        invalidated |= this->invalidate_steps({ posInfill, posIroning, posContouring, posSimplifyWall, posSimplifyInfill });
     } else if (step == posInfill) {
-        invalidated |= this->invalidate_steps({ posIroning, posSimplifyInfill });
+        invalidated |= this->invalidate_steps({ posIroning, posContouring, posSimplifyInfill });
         invalidated |= m_print->invalidate_steps({ psSkirtBrim });
     } else if (step == posSlice) {
-		invalidated |= this->invalidate_steps({ posPerimeters, posPrepareInfill, posInfill, posIroning, posSupportMaterial, posSimplifyWall, posSimplifyInfill });
+		invalidated |= this->invalidate_steps({ posPerimeters, posPrepareInfill, posInfill, posIroning, posContouring, posSupportMaterial, posSimplifyWall, posSimplifyInfill });
         invalidated |= m_print->invalidate_steps({ psSkirtBrim });
         m_slicing_params.valid = false;
     } else if (step == posSupportMaterial) {
