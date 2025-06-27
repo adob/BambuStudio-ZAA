@@ -1,12 +1,10 @@
-![image](https://user-images.githubusercontent.com/106916061/179006347-497d24c0-9bd6-45b7-8c49-d5cc8ecfe5d7.png)
+![image](nonplanar.jpg)
 
 # BambuStudio-ZAA
 
 This is a fork of Bambu Studio that implements a non-planar slicing feature called Z anti-aliasing or contouring. The basic idea is to dynamically vary the height of extrusions within a single layer to reduce stair-stepping artifacts on top surfaces.
 
 When starting the application, Z contouring can be controlled under the "Z Contouring" section in Global or Objects settings, under the Quality tab.
-
-
 
 ## Common Problems
 
