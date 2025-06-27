@@ -7,6 +7,7 @@
 #include "Flow.hpp"
 #include "Geometry/ConvexHull.hpp"
 #include "I18N.hpp"
+#include "Polygon.hpp"
 #include "Polyline.hpp"
 #include "ShortestPath.hpp"
 #include "Support/SupportMaterial.hpp"
@@ -3769,7 +3770,10 @@ static void from_json(const json& j, Polyline& poly_line) {
 }
 
 static void from_json(const json& j, ExtrusionPath& extrusion_path) {
-    extrusion_path.polyline               =    Polyline3((Polyline) j[JSON_EXTRUSION_POLYLINE]);
+    Polyline polyline;
+    from_json(j[JSON_EXTRUSION_POLYLINE], polyline);
+    
+    extrusion_path.polyline               =    Polyline3(polyline);
     extrusion_path.overhang_degree        =    j[JSON_EXTRUSION_OVERHANG_DEGREE];
     extrusion_path.curve_degree           =    j[JSON_EXTRUSION_CURVE_DEGREE];
     extrusion_path.mm3_per_mm             =    j[JSON_EXTRUSION_MM3_PER_MM];
