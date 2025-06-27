@@ -20,6 +20,8 @@ This work is based on
 
 - [Theaninova/GCodeZAA](https://github.com/Theaninova/GCodeZAA) - GCode post-processing script to enable smooth(-ish) non-planar top surfaces
 
+- [Non-planar models](https://www.printables.com/model/848822-non-planar-3d-printing-test-models) from [@TeachingTech](https://www.printables.com/@TeachingTech)
+
 ## Limitations
 
 Collisions are currently not handled though a method of doing is described in the paper.
