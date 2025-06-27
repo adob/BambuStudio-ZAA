@@ -13,7 +13,12 @@ endif()
 
 # The build_version should start from 50 in master branch
 
+<<<<<<< HEAD
 set(SLIC3R_VERSION "02.05.01.52-zaa1.0.0")
+=======
+set(SLIC3R_VERSION "02.01.01.52")
+set(ZAA_VERSION "1.0.2")
+>>>>>>> 43ae236eb (fix ironing expansion)
 
 string(REPLACE "." "," SLIC3R_COMMA_SEPARATED_VERSION ${SLIC3R_VERSION})
 set(SLIC3R_COMMA_SEPARATED_VERSION "${SLIC3R_COMMA_SEPARATED_VERSION}")

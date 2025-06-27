@@ -5613,6 +5613,7 @@ std::string GUI_App::format_display_version()
         else
             ++j;
     }
+    version_display += " / ZAA v" + std::string(ZAA_VERSION);
     return version_display;
 }
 

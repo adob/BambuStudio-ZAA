@@ -12588,12 +12588,13 @@ void Plater::priv::set_project_name(const wxString& project_name)
 {
     BOOST_LOG_TRIVIAL(trace) << __FUNCTION__ << __LINE__ << " project is:" << project_name;
     m_project_name = project_name;
+    wxString name = project_name + "- BambuStudio-ZAA";
     //update topbar title
 #ifdef __WINDOWS__
-    wxGetApp().mainframe->SetTitle(m_project_name + " - BambuStudio");
-    wxGetApp().mainframe->topbar()->SetTitle(m_project_name);
+    wxGetApp().mainframe->SetTitle(name);
+    wxGetApp().mainframe->topbar()->SetTitle(name);
 #else
-    wxGetApp().mainframe->SetTitle(m_project_name);
+    wxGetApp().mainframe->SetTitle(name);
     if (!m_project_name.IsEmpty())
         wxGetApp().mainframe->update_title_colour_after_set_title();
 #endif
