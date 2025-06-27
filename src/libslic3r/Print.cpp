@@ -3769,7 +3769,7 @@ static void from_json(const json& j, Polyline& poly_line) {
 }
 
 static void from_json(const json& j, ExtrusionPath& extrusion_path) {
-    extrusion_path.polyline               =    Polyline3(Polyline(j[JSON_EXTRUSION_POLYLINE]));
+    extrusion_path.polyline               =    Polyline3((Polyline) j[JSON_EXTRUSION_POLYLINE]);
     extrusion_path.overhang_degree        =    j[JSON_EXTRUSION_OVERHANG_DEGREE];
     extrusion_path.curve_degree           =    j[JSON_EXTRUSION_CURVE_DEGREE];
     extrusion_path.mm3_per_mm             =    j[JSON_EXTRUSION_MM3_PER_MM];
