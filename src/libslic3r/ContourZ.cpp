@@ -131,7 +131,7 @@ static bool contour_extrusion_path(LayerRegion *region, const sla::IndexedMesh &
 				}
 			}
 
-			if (d > max_up + 0.03*0 || d < min_down) {
+			if (d > max_up + 0.03 || d < min_down) {
 				d = 0;
 			} else {
 				if (d > max_up) {
