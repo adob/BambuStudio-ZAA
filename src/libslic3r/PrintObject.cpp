@@ -813,6 +813,11 @@ void PrintObject::contour_z()
     BOOST_LOG_TRIVIAL(debug) << "Contouring in parallel - start";
 
     TriangleMesh mesh = this->m_model_object->raw_mesh();    
+    if (m_model_object->instances.size() != 1) {
+        throw RuntimeError("ContourZ: unexpected numer of instances");
+    }
+
+    m_model_object->instances.front()->transform_mesh(&mesh, true);
     sla::IndexedMesh imesh(mesh);
 
     // int layer_idx = 0;
@@ -846,8 +851,8 @@ void PrintObject::contour_z()
     );
     m_print->throw_if_canceled();
     BOOST_LOG_TRIVIAL(debug) << "Contouring in parallel - end";
+
     this->set_done(posContouring);
-    
 }
 
 // BBS

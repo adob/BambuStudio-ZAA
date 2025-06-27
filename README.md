@@ -22,6 +22,12 @@ This work is based on
 
 - [Theaninova/GCodeZAA](https://github.com/Theaninova/GCodeZAA) - GCode post-processing script to enable smooth(-ish) non-planar top surfaces
 
+## Limitations
+
+Collisions are currently not handled though a method of doing is described in the paper.
+
+The algorithm performs a large number of ray intersection tests and this is done using a general purpose ray intersection algorithm. This can likely be sped up using a purpose-specific structure since the direction vector is always fixed.
+
 ## Original README
 
 Bambu Studio is a cutting-edge, feature-rich slicing software.  

@@ -977,7 +977,7 @@ void Layer::make_ironing()
 				ironing_params.just_infill 	= false;
 				ironing_params.line_spacing = config.ironing_spacing;
 				ironing_params.inset 		= config.ironing_inset;
-				ironing_params.expansion    = this->object()->config().zaa_enabled && config.ironing_expansion;
+				ironing_params.expansion    = (this->object()->config().zaa_enabled && config.ironing_expansion > 0) ? config.ironing_expansion : 0;
 				ironing_params.height 		= default_layer_height * 0.01 * config.ironing_flow;
 				ironing_params.speed 		= config.ironing_speed;
 				ironing_params.angle 		= (int(config.ironing_direction.value+layerm->region().config().infill_direction.value)%180) * M_PI / 180.;

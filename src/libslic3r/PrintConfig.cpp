@@ -3510,6 +3510,13 @@ void PrintConfigDef::init_fff_params()
     def->mode     = comDevelop;
     def->set_default_value(new ConfigOptionFloat(45));
 
+    def = this->add("zaa_region_disable", coBool);
+    def->label    = "Disable Z contouring for region";
+    def->category = L("Quality");
+    def->tooltip  = "Disable Z contouring for this specific region";
+    def->mode     = comAdvanced;
+    def->set_default_value(new ConfigOptionBool(false));
+
     def = this->add("zaa_enabled", coBool);
     def->label    = "Z contouring enabled";
     def->category = L("Quality");

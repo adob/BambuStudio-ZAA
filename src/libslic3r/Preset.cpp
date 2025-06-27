@@ -945,7 +945,7 @@ static std::vector<std::string> s_Preset_print_options {
     "ironing_flow", "ironing_speed", "ironing_spacing","ironing_direction", "ironing_inset", "ironing_expansion",
     "enable_support_ironing","support_ironing_pattern","support_ironing_speed",
     "support_ironing_flow","support_ironing_spacing","support_ironing_inset","support_ironing_direction",
-    "zaa_enabled", "zaa_minimize_perimeter_height", "zaa_dont_alternate_fill_direction", "zaa_min_z",
+    "zaa_enabled", "zaa_region_disable", "zaa_minimize_perimeter_height", "zaa_dont_alternate_fill_direction", "zaa_min_z",
     "max_travel_detour_distance", "avoid_crossing_wall_includes_support",
     "fuzzy_skin", "fuzzy_skin_thickness", "fuzzy_skin_point_distance",
 #ifdef HAS_PRESSURE_EQUALIZER

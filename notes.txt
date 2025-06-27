@@ -5,7 +5,7 @@
     cmake .. -DSLIC3R_STATIC=ON -DSLIC3R_GTK=3 -DBBL_RELEASE_TO_PUBLIC=1 -DCMAKE_PREFIX_PATH="$PWD/../../BambuStudio_dep/usr/local" -DCMAKE_INSTALL_PREFIX="../install_dir" -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 
 # Compile (32 parallel tasks)
-    cmake --build . --target install --config Release -j32
+    cmake --build . --target install --config Release -j16
 
 # Add configuration option
     Add to `s_Preset_print_options` in src/libslic3r/Preset.cpp
@@ -18,3 +18,4 @@ zaa_enabled
 zaa_minimize_perimeter_height
 zaa_dont_alternate_fill_direction
 zaa_min_z
+zaa_region_disable

@@ -6008,8 +6008,9 @@ std::string GCode::_extrude(const ExtrusionPath &path, std::string description, 
             z = get_sloped_z(sloped->slope_begin.z_ratio);
         } else if ((!m_last_pos_defined && first_point.z() != 0) || m_last_pos.z() != first_point.z()) {
             z = m_nominal_z + unscale_(first_point.z());
-            if (z < 0.2) {
-                z = 0.2;
+            if (z < 0.1) {
+                throw RuntimeError("GCode: very low z");
+                // z = 0.1;
             }
         }
         gcode += this->travel_to(
@@ -6322,8 +6323,9 @@ std::string GCode::_extrude(const ExtrusionPath &path, std::string description, 
                     double e = e_per_mm * line_length * extrusion_ratio;
 
                     double z = m_nominal_z + z_diff;
-                    if (z < 0.2) {
-                        z = 0.2;
+                    if (z < 0.1) {
+                        throw RuntimeError("GCode: very low z");
+                        // z = 0.1;
                     }
                     gcode += m_writer.extrude_to_xyz(
                         Vec3d(dest2d.x(), dest2d.y(), z),

@@ -1,10 +1,12 @@
 #include "ExtrusionEntity.hpp"
+#include "ExtrusionEntityCollection.hpp"
 #include "Layer.hpp"
 #include "Point.hpp"
 #include "libslic3r.h"
 #include <cfloat>
 #include <cmath>
 #include <initializer_list>
+#include <string>
 
 namespace Slic3r {
 
@@ -30,9 +32,13 @@ static double lowest_z_within_distance(const Vec3d &normal, double dist) {
 }
 
 static bool contour_extrusion_path(LayerRegion *region, const sla::IndexedMesh &mesh, ExtrusionPath &path) {
+	if (region->region().config().zaa_region_disable) {
+		return false;
+	}
+	
 	Layer *layer = region->layer();
 	coordf_t mesh_z = layer->print_z + mesh.ground_level();
-	coordf_t min_z = 0.05;
+	coordf_t min_z = layer->object()->config().zaa_min_z;
 
 	const Points3 &points = path.polyline.points;
 	double resolution_mm = 0.1;
@@ -44,8 +50,9 @@ static bool contour_extrusion_path(LayerRegion *region, const sla::IndexedMesh &
 	// std::cout << "EXTRUSION HEIGHT " << path.height << std::endl;
 	// std::cout << "EXTRUSION WIDTH " << path.width << std::endl;
 	// std::cout << "EXTRUSION ROLE: " << ExtrusionEntity::role_to_string(path.role()) << std::endl;
+	// std::cout << "FIRST POINT: " << path.polyline.first_point() << std::endl;
 
-	bool minimize_perimeter_height = layer->object()->config().zaa_minimize_perimeter_height;
+	bool minimize_perimeter_height = region->region().config().zaa_minimize_perimeter_height;
 
 	Pointf3s contoured_points;
 	bool was_contoured = false;
@@ -133,6 +140,13 @@ static bool contour_extrusion_path(LayerRegion *region, const sla::IndexedMesh &
 	return true;
 }
 
+static void contour_extrusion_multipath(LayerRegion *region, const sla::IndexedMesh &mesh, ExtrusionMultiPath &multipath) 
+{
+	for (ExtrusionPath &path : multipath.paths) {
+		contour_extrusion_path(region, mesh, path);
+	}
+}
+
 static void contour_extrusion_loop(LayerRegion *region, const sla::IndexedMesh &mesh, ExtrusionLoop &loop) 
 {
 	for (ExtrusionPath &path : loop.paths) {
@@ -150,6 +164,12 @@ static void contour_extrusion_entity(LayerRegion *region, const sla::IndexedMesh
 	const ExtrusionPathSloped *sloped = dynamic_cast<const ExtrusionPathSloped*>(extr);
 	if (sloped != nullptr) {
 		throw RuntimeError("ExtrusionPathSloped not implemented");
+		return;
+	}
+
+	ExtrusionMultiPath *multipath = dynamic_cast<ExtrusionMultiPath*>(extr);
+	if (multipath != nullptr) {
+		contour_extrusion_multipath(region, mesh, *multipath);
 		return;
 	}
 
@@ -177,12 +197,13 @@ static void contour_extrusion_entity(LayerRegion *region, const sla::IndexedMesh
 		return;
 	}
 
-	throw RuntimeError("ContourZ: ExtrusionEntity type not implemented");
+	throw RuntimeError("ContourZ: ExtrusionEntity type not implemented: " + std::string(typeid(*extr).name()));
 	return;
 }
 
 static void handle_extrusion_collection(LayerRegion *region, const sla::IndexedMesh &mesh, ExtrusionEntityCollection &collection, std::initializer_list<ExtrusionRole> roles) {
 	for (ExtrusionEntity *extr : collection.entities) {
+		// printf("handling extrusion collection %p %p\n", &collection, extr);
 		if (!contains(roles, extr->role())) {
 			continue;
 		}
@@ -191,13 +212,81 @@ static void handle_extrusion_collection(LayerRegion *region, const sla::IndexedM
 	}
 }
 
+// static void find_point(ExtrusionPath &path, const std::string &path_info) { 
+// 	Points3 &points = path.polyline.points;
+
+// 	size_t i = 0;
+// 	for (Points3::const_iterator it = points.begin(); it != points.end()-1; ++it) {
+// 		if (it->x() == -883971 && it->y() == 979001) {
+// 			std::cout << "FOUND POINT " << ExtrusionEntity::role_to_string(path.role()) << " at path " << path_info << "[" + std::to_string(i) + "]" << std::endl;
+// 		}
+// 		i++;
+// 	}
+// }
+
+// static void find_point(ExtrusionLoop &loop, const std::string &path_info) { 
+// 	size_t i = 0;
+// 	for (ExtrusionPath &path : loop.paths) {
+// 		find_point(path, path_info + "[" + std::to_string(i) + "]");
+// 		i++;
+// 	}
+// }
+
+// static void find_point(ExtrusionEntity &extr, const std::string &path);
+
+// static void find_point(ExtrusionEntityCollection &collection, const std::string &path) {
+// 	size_t i = 0;
+// 	for (ExtrusionEntity *extr : collection.entities) {
+// 		find_point(*extr, path + "[" + std::to_string(i) + "]");
+// 		i++;
+// 	}
+// }
+
+// static void find_point(ExtrusionEntity &extr, const std::string &path_info) { 
+// 	const ExtrusionPathSloped *sloped = dynamic_cast<const ExtrusionPathSloped*>(&extr);
+// 	if (sloped != nullptr) {
+// 		throw RuntimeError("ExtrusionPathSloped not implemented");
+// 		return;
+// 	}
+
+// 	ExtrusionPath *path = dynamic_cast<ExtrusionPath*>(&extr);
+// 	if (path != nullptr) {
+// 		find_point(*path, path_info + " as ExtrusionPath " + ExtrusionEntity::role_to_string(extr.role()));
+// 		return;
+// 	}
+
+// 	ExtrusionLoop *loop = dynamic_cast<ExtrusionLoop*>(&extr);
+// 	if (loop != nullptr) {
+// 		find_point(*loop, path_info + " as ExtrusionLoop " + ExtrusionEntity::role_to_string(extr.role()));
+// 		return;
+// 	}
+
+// 	const ExtrusionLoopSloped *loop_sloped = dynamic_cast<const ExtrusionLoopSloped*>(&extr);
+// 	if (loop_sloped != nullptr) {
+// 		throw RuntimeError("ExtrusionLoopSloped not implemented");
+// 		return;
+// 	}
+
+// 	ExtrusionEntityCollection *collection = dynamic_cast<ExtrusionEntityCollection*>(&extr);
+// 	if (collection != nullptr) {
+// 		find_point(*collection, path_info + " as ExtrusionEntityCollection " + ExtrusionEntity::role_to_string(extr.role()));
+// 		return;
+// 	}
+
+// 	throw RuntimeError("ContourZ: ExtrusionEntity type not implemented");
+// 	return;
+// }
+
 void Layer::make_contour_z(const sla::IndexedMesh &mesh)
 {
+	// printf("make_contour_z() called\n");
 	for (LayerRegion *region : this->regions()) {
-		for (size_t i = 0; i < region->fills.entities.size(); i++) {
-			handle_extrusion_collection(region, mesh, region->fills, {erTopSolidInfill, erIroning});
-			handle_extrusion_collection(region, mesh, region->perimeters, {erExternalPerimeter, erPerimeter, erOverhangPerimeter});
-		}
+		// printf("processing layer region %p\n", region);
+		// find_point(region->fills, "fills");
+		// find_point(region->perimeters, "perimeters");
+
+		handle_extrusion_collection(region, mesh, region->fills, {erTopSolidInfill, erIroning, erExternalPerimeter, erMixed});
+		handle_extrusion_collection(region, mesh, region->perimeters, {erExternalPerimeter, erMixed});
 	}
 }
 } // namespace Slic3r
