@@ -3524,12 +3524,15 @@ void PrintConfigDef::init_fff_params()
     def->mode     = comAdvanced;
     def->set_default_value(new ConfigOptionBool(false));
 
-    def = this->add("zaa_minimize_perimeter_height", coBool);
-    def->label    = "Minimize wall height";
+    def = this->add("zaa_minimize_perimeter_height", coFloat);
+    def->label    = "Minimize wall height angle";
     def->category = L("Quality");
-    def->tooltip  = "Reduce top surface perimeter heights to match height of edge";
+    def->tooltip  = "Reduce top surface perimeter heights to match height of edge for perimeters less than this angle. Set 0 to disable.";
+    def->sidetext = "°";
+    def->min      = 0;
+    def->max      = 90;
     def->mode     = comAdvanced;
-    def->set_default_value(new ConfigOptionBool(false));
+    def->set_default_value(new ConfigOptionFloat(35));
 
     def = this->add("zaa_dont_alternate_fill_direction", coBool);
     def->label    = "Don't alternate fill direction";
@@ -3542,6 +3545,9 @@ void PrintConfigDef::init_fff_params()
     def->label    = "Minimum z height (mm)";
     def->category = L("Quality");
     def->tooltip  = "Minimum z layer height. Also controls slicing plane";
+    def->sidetext = L("mm");
+    def->min      = 0;
+    def->max      = 100;
     def->mode     = comAdvanced;
     def->set_default_value(new ConfigOptionFloat(0.05));
 

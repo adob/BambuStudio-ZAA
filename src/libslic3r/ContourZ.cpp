@@ -1,3 +1,4 @@
+#include "Exception.hpp"
 #include "ExtrusionEntity.hpp"
 #include "ExtrusionEntityCollection.hpp"
 #include "Layer.hpp"
@@ -12,27 +13,54 @@ namespace Slic3r {
 
 static void contour_extrusion_entity(LayerRegion *region, const sla::IndexedMesh &mesh, ExtrusionEntity *extr);
 
-static double lowest_z_within_distance(const Vec3d &normal, double dist) {
-	const Vec3d p(0.0, 0.0, 0.0);
-	Eigen::Vector3d n_unit = normal.normalized();
-    Eigen::Vector3d z_hat(0.0, 0.0, 1.0);
+// static double lowest_z_within_distance(const Vec3d &normal, double dist) {
+// 	const Vec3d p(0.0, 0.0, 0.0);
+// 	Eigen::Vector3d n_unit = normal.normalized();
+//     Eigen::Vector3d z_hat(0.0, 0.0, 1.0);
 
-    // Project the negative z-direction into the tangent plane
-    Eigen::Vector3d v_dir = -z_hat + (z_hat.dot(n_unit)) * n_unit;
+//     // Project the negative z-direction into the tangent plane
+//     Eigen::Vector3d v_dir = -z_hat + (z_hat.dot(n_unit)) * n_unit;
 
-    double norm_v = v_dir.norm();
-    if (norm_v == 0.0) {
-        // Surface is horizontal, cannot go lower in z within tangent plane
-        return p.z();
-    }
+//     double norm_v = v_dir.norm();
+//     if (norm_v == 0.0) {
+//         // Surface is horizontal, cannot go lower in z within tangent plane
+//         return p.z();
+//     }
 
-    Eigen::Vector3d v = dist * v_dir / norm_v;
-    Eigen::Vector3d q = p + v;
-	return q.z();
+//     Eigen::Vector3d v = dist * v_dir / norm_v;
+//     Eigen::Vector3d q = p + v;
+// 	return q.z();
+// }
+
+static double follow_slope_down(double angle_rad, double dist) {
+	return -dist * std::sin(angle_rad);
 }
+
+static double slope_from_normal(const Eigen::Vector3d& normal) {
+    // Ensure the normal is normalized
+    Eigen::Vector3d n = normal.normalized();
+
+    // Compute angle between normal and z-axis
+    double angle_rad = std::acos(std::abs(n.z()));  // angle between normal and vertical
+	return angle_rad;
+
+	// calculate fall over dist
+	// double dist = 0.2;
+	// double z_dist = lowest_z(angle_rad, dist);
+	// printf("fall %f vs %f\n", z_dist, lowest_z_within_distance(normal, dist));
+
+    // double angle_deg = angle_rad * 180.0 / M_PI;
+    // return angle_deg;
+}
+
+// const int LINE = 180;
 
 static bool contour_extrusion_path(LayerRegion *region, const sla::IndexedMesh &mesh, ExtrusionPath &path) {
 	if (region->region().config().zaa_region_disable) {
+		return false;
+	}
+
+	if (path.role() != erTopSolidInfill && path.role() != erIroning && path.role() != erExternalPerimeter && path.role() != erPerimeter) {
 		return false;
 	}
 	
@@ -52,7 +80,7 @@ static bool contour_extrusion_path(LayerRegion *region, const sla::IndexedMesh &
 	// std::cout << "EXTRUSION ROLE: " << ExtrusionEntity::role_to_string(path.role()) << std::endl;
 	// std::cout << "FIRST POINT: " << path.polyline.first_point() << std::endl;
 
-	bool minimize_perimeter_height = region->region().config().zaa_minimize_perimeter_height;
+	double minimize_perimeter_height_angle = region->region().config().zaa_minimize_perimeter_height;
 
 	Pointf3s contoured_points;
 	bool was_contoured = false;
@@ -78,33 +106,44 @@ static bool contour_extrusion_path(LayerRegion *region, const sla::IndexedMesh &
 
 			double up = hit_up.distance();
 			double down = hit_down.distance();
-			double d = 0;
+			double d = up < down ? up : -down;
+			const Vec3d &normal = (up < down ? hit_up : hit_down).normal();
+			
+			double max_up = min_z;
+			double min_down = -(height - min_z);
+			double half_width = path.width / 2.0;
+			if (path.role() == erIroning) {
+				max_up = height;
+				min_down = -(height + 0.1);
+			}
 
-			if (path.role() == erExternalPerimeter) {
-				if (up < down) {
-					// do not increase height of external perimeters as this may create an appearance of a seam
-					up = INFINITY;
-				} else if (minimize_perimeter_height) {
-					// possibly decrease height of external perimter to match real edge height
-					double half_width = path.width / 2.0;
-					double adjustment = lowest_z_within_distance(hit_down.normal(), half_width);
-					down += adjustment;
+			double slope_rad = slope_from_normal(normal);
+			double slope_degrees = slope_rad * 180.0 / M_PI;
+
+			if (d > min_down && minimize_perimeter_height_angle > 0 && minimize_perimeter_height_angle < slope_degrees && path.role() == erExternalPerimeter) {
+				double adjustment = follow_slope_down(slope_rad, half_width);
+				if (adjustment > 0) {
+					throw RuntimeError("ContourZ: got positive adjustment");
+				}
+				d += adjustment;
+				if (d < min_down) {
+					d = min_down;
 				}
 			}
 
-			double max_up = min_z;
-			double max_down = height - min_z;
-			if (path.role() == erIroning) {
-				max_up = height;
-				max_down = height + 0.1;
-			}
-			
-			if (up < down && up <= max_up) {
-				d = std::min(max_up, up);
-			} else if (down <= up && down <= max_down) {
-				d = -std::min(max_down, down);
+			if (d > max_up + 0.03*0 || d < min_down) {
+				d = 0;
+			} else {
+				if (d > max_up) {
+					d = max_up;
+				}
 			}
 
+			if (path.role() == erExternalPerimeter && d > 0) {
+				// do not increase height of external perimeters as this may create an appearance of a seam
+				d = 0;
+			}
+			
 			if (std::abs(d) > EPSILON) {
 				was_contoured = true;
 			}

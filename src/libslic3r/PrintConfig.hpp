@@ -1056,7 +1056,7 @@ PRINT_CONFIG_CLASS_DEFINE(
 
     // Z Anti-Aliasing (aka Z Contouring)
     ((ConfigOptionBool, zaa_region_disable))
-    ((ConfigOptionBool, zaa_minimize_perimeter_height))
+    ((ConfigOptionFloat, zaa_minimize_perimeter_height))
 )
 
 PRINT_CONFIG_CLASS_DEFINE(
