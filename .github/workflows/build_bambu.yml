@@ -46,7 +46,7 @@ jobs:
           else
             ver=V$ver_pure
           fi
-          echo "ver=$ver" >> $GITHUB_ENV
+          echo "ver=$ver-zaa$zaa_ver" >> $GITHUB_ENV
           echo "ver_pure=$ver_pure" >> $GITHUB_ENV
           echo "date=$(date +'%Y%m%d')" >> $GITHUB_ENV
         shell: bash
@@ -68,6 +68,9 @@ jobs:
               }
               $ver = "V$ver"
           }
+
+          $versionContent -match 'set\(ZAA_VERSION "(.*?)"\)'
+          $zaa_ver = $matches[1]
 
           echo "ver=$ver-zaa$zaa_ver" | Out-File -Append -FilePath $env:GITHUB_ENV -Encoding utf8
           echo "date=$date" | Out-File -Append -FilePath $env:GITHUB_ENV -Encoding utf8
