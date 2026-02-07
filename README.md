@@ -4,7 +4,7 @@
 
 This is a fork of Bambu Studio that implements a non-planar slicing feature called Z anti-aliasing or contouring. The basic idea is to dynamically vary the height of extrusions within a single layer to reduce stair-stepping artifacts on top surfaces.
 
-This application can compiled from source, using instructions below, or downloaded from Releases section on the right.
+Prebuilt Windows, macOS 64-bit and Linux releases are available through the [github releases page](https://github.com/adob/BambuStudio-ZAA/releases/).
 
 When starting the application, Z contouring can be controlled under the "Z Contouring" section in Global or Objects settings, under the Quality tab.
 
@@ -30,18 +30,46 @@ Collisions are currently not handled though a method of doing is described in th
 
 The algorithm performs a large number of ray intersection tests and this is done using a general purpose ray intersection algorithm. This can likely be sped up using a purpose-specific structure since the direction vector is always fixed.
 
+## How to compile / install
+
+Prebuilt Windows, macOS 64-bit and Linux releases are available through the [github releases page](https://github.com/adob/BambuStudio-ZAA/releases/).
+
+Following platforms are currently supported for compilation:
+
+- Windows 64-bit, [Compile Guide](https://github.com/bambulab/BambuStudio/wiki/Windows-Compile-Guide)
+- Mac 64-bit, [Compile Guide](https://github.com/bambulab/BambuStudio/wiki/Mac-Compile-Guide)
+- Linux, [Compile Guide](https://github.com/bambulab/BambuStudio/wiki/Linux-Compile-Guide)
+  - currently we only provide linux appimages on [github releases](https://github.com/adob/BambuStudio-ZAA/releases) for Ubuntu/Fedora <!-- , and a [flathub version](https://flathub.org/apps/com.bambulab.BambuStudio) can be used for all the linux platforms -->
+
+## Report issue
+
+You can add an issue to the [github tracker](https://github.com/adob/BambuStudio-ZAA/issues) if **it isn't already present.**
+
+## License
+
+Bambu Studio is licensed under the GNU Affero General Public License, version 3. Bambu Studio is based on PrusaSlicer by PrusaResearch.
+
+PrusaSlicer is licensed under the GNU Affero General Public License, version 3. PrusaSlicer is owned by Prusa Research. PrusaSlicer is originally based on Slic3r by Alessandro Ranellucci.
+
+Slic3r is licensed under the GNU Affero General Public License, version 3. Slic3r was created by Alessandro Ranellucci with the help of many other contributors.
+
+The GNU Affero General Public License, version 3 ensures that if you use any part of this software in any way (even behind a web server), your software must be released under the same license.
+
+The bambu networking plugin is based on non-free libraries. It is optional to the Bambu Studio and provides extended networking functionalities for users.
+By default, after installing Bambu Studio without the networking plugin, you can initiate printing through the SD card after slicing is completed.
+
 ## Original README
 
 Bambu Studio is a cutting-edge, feature-rich slicing software.  
 It contains project-based workflows, systematically optimized slicing algorithms, and an easy-to-use graphic interface, bringing users an incredibly smooth printing experience.
 
-Prebuilt Windows, macOS 64-bit and Linux releases are available through the [github releases page](https://github.com/bambulab/BambuStudio/releases/).
+<!-- Prebuilt Windows, macOS 64-bit and Linux releases are available through the [github releases page](https://github.com/bambulab/BambuStudio/releases/). -->
 
 Bambu Studio is based on [PrusaSlicer](https://github.com/prusa3d/PrusaSlicer) by Prusa Research, which is from [Slic3r](https://github.com/Slic3r/Slic3r) by Alessandro Ranellucci and the RepRap community.
 
 See the [wiki](https://github.com/bambulab/BambuStudio/wiki) and the [documentation directory](https://github.com/bambulab/BambuStudio/tree/master/doc) for more information.
 
-# What are Bambu Studio's main features?
+### What are Bambu Studio's main features?
 
 Key features are:
 
@@ -63,29 +91,3 @@ Other major features are:
 - Support STEP format
 - Assembly & explosion view
 - Flushing transition-filament into infill/object during filament change
-
-# How to compile
-
-Following platforms are currently supported to compile:
-
-- Windows 64-bit, [Compile Guide](https://github.com/bambulab/BambuStudio/wiki/Windows-Compile-Guide)
-- Mac 64-bit, [Compile Guide](https://github.com/bambulab/BambuStudio/wiki/Mac-Compile-Guide)
-- Linux, [Compile Guide](https://github.com/bambulab/BambuStudio/wiki/Linux-Compile-Guide)
-  - currently we only provide linux appimages on [github releases](https://github.com/bambulab/BambuStudio/releases) for Ubuntu/Fedora, and a [flathub version](https://flathub.org/apps/com.bambulab.BambuStudio) can be used for all the linux platforms
-
-# Report issue
-
-You can add an issue to the [github tracker](https://github.com/bambulab/BambuStudio/issues) if **it isn't already present.**
-
-# License
-
-Bambu Studio is licensed under the GNU Affero General Public License, version 3. Bambu Studio is based on PrusaSlicer by PrusaResearch.
-
-PrusaSlicer is licensed under the GNU Affero General Public License, version 3. PrusaSlicer is owned by Prusa Research. PrusaSlicer is originally based on Slic3r by Alessandro Ranellucci.
-
-Slic3r is licensed under the GNU Affero General Public License, version 3. Slic3r was created by Alessandro Ranellucci with the help of many other contributors.
-
-The GNU Affero General Public License, version 3 ensures that if you use any part of this software in any way (even behind a web server), your software must be released under the same license.
-
-The bambu networking plugin is based on non-free libraries. It is optional to the Bambu Studio and provides extended networking functionalities for users.
-By default, after installing Bambu Studio without the networking plugin, you can initiate printing through the SD card after slicing is completed.
