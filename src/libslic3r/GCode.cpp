@@ -5989,7 +5989,6 @@ std::string GCode::_extrude(const ExtrusionPath &path, std::string description, 
         return lerp(m_nominal_z - height, m_nominal_z, z_ratio);
     };
 
-<<<<<<< HEAD
     auto temp_travel_speed = m_writer.config.travel_speed;
     auto temp_travel_speed_z = m_writer.config.travel_speed_z;
     auto temp_travel_jerk = m_config.travel_jerk;
