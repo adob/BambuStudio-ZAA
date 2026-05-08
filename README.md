@@ -1,5 +1,10 @@
 ![image](nonplanar.jpg)
 
+> [!TIP]
+> The ZAA feature in this fork has recently been merged into [OrcaSlicer](https://github.com/OrcaSlicer/OrcaSlicer/) main.
+>
+> It's the same logic as in this repository, but with numerous bug fixes. To use it, download a nightly release and enable "expert mode" in OrcaSlicer settings.
+> 
 # BambuStudio-ZAA
 
 This is a fork of Bambu Studio that implements a non-planar slicing feature called Z anti-aliasing or contouring. The basic idea is to dynamically vary the height of extrusions within a single layer to reduce stair-stepping artifacts on top surfaces.
